@@ -5,7 +5,7 @@ const VideosMain = () => (
     <VideosList
         type='card'
         title={false}
-        loadmore={true}
+        loadMore={true}
         start={0}
         amount={10}
     />

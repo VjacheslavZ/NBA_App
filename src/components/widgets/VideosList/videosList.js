@@ -63,9 +63,9 @@ class VideosList extends Component{
     };
 
     renderButton = () => {
-        return this.props.loadmore ?
+        return this.props.loadMore ?
             <Button
-                type='loadmore'
+                type='loadMore'
                 loadMore={()=> this.loadMore()}
                 cta='Load more videos'
             />

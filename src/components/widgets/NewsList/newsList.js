@@ -124,7 +124,7 @@ class NewsList extends Component {
                 </TransitionGroup>
 
                 <Button
-                    type='loadmore'
+                    type='loadMore'
                     loadMore={()=>this.loadMore()}
                     cta='Load More News'
                 />
