@@ -6,6 +6,7 @@ import { URL } from '../../../config';
 import styles from './newsList.css'
 import Button from '../../widgets/Buttons/buttons'
 import CardInfo from '../../widgets/CardInfo/cardInfo'
+import { firebaseTeams, firebaseArticles, firebaseLooper } from '../../../firebase';
 
 class NewsList extends Component {
     state = {
@@ -22,27 +23,32 @@ class NewsList extends Component {
 
     request = (start, end) => {
         if(this.state.teams.length < 1) {
-            axios.get(`${URL}/teams`)
-                .then(response => {
+            firebaseTeams.once('value')
+                .then((snapshot) => {
+                    const teams = firebaseLooper(snapshot);
                     this.setState({
-                        teams: response.data
+                        teams
                     })
                 })
         }
 
-        axios.get(`${URL}/articles?_start=${start}&_end=${end}`)
-            .then(response => {
+        firebaseArticles.orderByChild('id').startAt(start).endAt(end).once('value')
+            .then((snapshot) => {
+                const articles = firebaseLooper(snapshot);
                 this.setState({
-                    items: [...this.state.items, ...response.data],
+                    items: [...this.state.items, ...articles],
                     start,
                     end
                 })
+            })
+            .catch(e => {
+                console.log(e)
             })
     };
 
     loadMore = () => {
         let end = this.state.end + this.state.amount;
-        this.request(this.state.end, end);
+        this.request(this.state.end + 1, end);
     };
 
     renderNews = (type) => {
