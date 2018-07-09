@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { URL } from '../../../config';
 import styles from './newsList.css'
 import Button from '../../widgets/Buttons/buttons'
 import CardInfo from '../../widgets/CardInfo/cardInfo'
