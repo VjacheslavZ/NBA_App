@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './formFields.css';
 
-const FormFields = ({formData, change, id}) => {
+const FormField = ({formData, change, id}) => {
 
     const showError = () => {
         let errorMessage = null;
@@ -19,7 +19,7 @@ const FormFields = ({formData, change, id}) => {
     
     const renderTemplate = () => {
         let formTemplate = null;
-        
+
         switch(formData.element) {
             case ('input'):
                 formTemplate = (
@@ -31,6 +31,24 @@ const FormFields = ({formData, change, id}) => {
                             onChange={(event) => change({event,id,blur:false})}
                         />
                         {showError()}
+                    </div>
+                );
+                break;
+            case ('select'):
+                formTemplate = (
+                    <div>
+                        <select
+                            value={formData.value}
+                            name={formData.config.name}
+                            onBlur={(event) => change({event,id,blur:true})}
+                            onChange={(event) => change({event,id,blur:false})}
+                        >
+                            {formData.config.options.map((item, i) => (
+                                <option key={i} value={item.id}>
+                                    {item.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 );
                 break;
@@ -48,4 +66,4 @@ const FormFields = ({formData, change, id}) => {
     )
 };
 
-export default FormFields
+export default FormField

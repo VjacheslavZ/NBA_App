@@ -65,7 +65,6 @@ class SignIn extends Component {
         this.setState({
             formData: newFormData
         })
-
     };
 
     validate = (element) => {
