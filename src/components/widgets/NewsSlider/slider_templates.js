@@ -3,7 +3,7 @@ import Slick from 'react-slick';
 import { Link } from 'react-router-dom'
 import style from './slider.css'
 
-const SliderTempaltes = (props) => {
+const SliderTemplates = (props) => {
     let template = null;
 
     const settings = {
@@ -48,5 +48,5 @@ const SliderTempaltes = (props) => {
     )
 };
 
-export default SliderTempaltes;
+export default SliderTemplates;
 

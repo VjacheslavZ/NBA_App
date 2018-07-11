@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import styles from './signin.css';
 import FormField from '../widgets/FormFields/formFields';
+import { firebase } from '../../firebase'
 
 class SignIn extends Component {
     state = {
@@ -109,11 +110,41 @@ class SignIn extends Component {
                 this.setState({
                     loading: true,
                     registerError: '',
-                })
-                if(formIsValid){
-                    console.log('Login')
+                });
+
+                if(type){
+                    firebase
+                        .auth()
+                        .signInWithEmailAndPassword(
+                            dataTosubmit.email,
+                            dataTosubmit.password
+                        )
+                        .then(() => {
+                            this.props.history.push('/')
+                        })
+                        .catch( error => {
+                            this.setState({
+                                loading: false,
+                                registerError: error.message
+                            })
+                        })
+
                 } else {
-                    console.log('register')
+                    firebase
+                        .auth()
+                        .createUserWithEmailAndPassword(
+                            dataTosubmit.email,
+                            dataTosubmit.password
+                        )
+                        .then(() => {
+                            this.props.history.push('/')
+                        })
+                        .catch( error => {
+                            this.setState({
+                                loading: false,
+                                registerError: error.message
+                            })
+                        })
                 }
             }
         }
@@ -127,6 +158,13 @@ class SignIn extends Component {
             <button onClick={(e) => this.submitForm(e, false)}>Register now</button>
             <button onClick={(e) => this.submitForm(e, true)}>Log in</button>
         </div>
+    );
+
+    showError = () => (
+        this.state.registerError !== '' ?
+            <div className={styles.error}>{this.state.registerError}</div>
+            :
+            ''
     );
 
     render() {
@@ -147,7 +185,7 @@ class SignIn extends Component {
                     />
 
                     {this.submitButton()}
-
+                    {this.showError()}
                 </form>
             </div>
         )
