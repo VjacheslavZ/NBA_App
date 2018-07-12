@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import styles from './dashboard.css'
 import FormField from '../widgets/FormFields/formFields'
-import {firebaseTeams} from '../../firebase'
+import {firebaseArticles, firebaseTeams, firebase} from '../../firebase'
 
 import { Editor } from 'react-draft-wysiwyg';
-import { EditorState, convertFromraw, convertToRaw } from 'draft-js';
+import { EditorState } from 'draft-js';
 import { stateToHTML } from 'draft-js-export-html';
+
+import Uploader from '../widgets/fileUpLoader/fileUpLoader'
 
 class Dashboard extends Component {
     state = {
@@ -49,7 +51,12 @@ class Dashboard extends Component {
                 value: '',
                 valid: true
             },
-            teams: {
+            image: {
+                element: 'image',
+                value: '',
+                valid: true
+            },
+            team: {
                 element: 'select',
                 value: '',
                 config: {
@@ -74,20 +81,20 @@ class Dashboard extends Component {
     loadTeams = () => {
         firebaseTeams.once('value')
             .then((snapshot) => {
-                let teams = [];
+                let team = [];
 
                 snapshot.forEach((childSnapshot) => {
-                    teams.push({
+                    team.push({
                         id: childSnapshot.val().teamId,
                         name: childSnapshot.val().city
                     })
                 });
 
                 const newFormData = {...this.state.formData};
-                const newElement = {...newFormData['teams']};
+                const newElement = {...newFormData['team']};
 
-                newElement.config.options = teams;
-                newFormData['teams'] = newElement;
+                newElement.config.options = team;
+                newFormData['team'] = newElement;
 
                 this.setState({
                     formData: newFormData
@@ -148,10 +155,36 @@ class Dashboard extends Component {
             formIsValid = this.state.formData[key].valid && formIsValid
         }
 
-        console.log(dataToSubmit)
-
         if(formIsValid) {
-            console.log('SMB post')
+            this.setState({
+                loading: true,
+                postError: ''
+            });
+
+            firebaseArticles.orderByChild('id')
+                .limitToLast(1)
+                .once('value')
+                .then(snapshot => {
+                    let articleId = null;
+                    snapshot.forEach(childSnapshot => {
+                        articleId = childSnapshot.val().id
+                    });
+
+                    dataToSubmit['date'] = firebase.database.ServerValue.TIMESTAMP;
+                    dataToSubmit['id'] = articleId + 1;
+                    dataToSubmit['team'] = parseInt(dataToSubmit['team'],10);
+
+                    firebaseArticles.push(dataToSubmit)
+                        .then( article => {
+                            this.props.history.push(`/articles/${article.key}`)
+                        }).catch( e =>{
+                        this.setState({
+                            postError: e.message
+                        })
+                    })
+
+                });
+
         } else {
             this.setState({
                 postError: "Something went wrong",
@@ -177,7 +210,6 @@ class Dashboard extends Component {
 
     onEditorStateChange = (editorState) => {
         let contentState = editorState.getCurrentContent();
-        let rawState = convertToRaw(contentState);
         let html = stateToHTML(contentState);
 
         this.updateForm({id: 'body'}, html);
@@ -187,12 +219,19 @@ class Dashboard extends Component {
         })
     };
 
+    storeFilename = (fileName) => {
+        this.updateForm({id: 'image'}, fileName);
+    };
+
     render() {
         return(
             <div className={styles.postContainer}>
                 <form onSubmit={this.submitForm}>
                     <h2>Add post</h2>
 
+                    <Uploader
+                        filename={(filename)=> this.storeFilename(filename)}
+                    />
 
                     <FormField
                         id={'author'}
@@ -214,8 +253,8 @@ class Dashboard extends Component {
                     />
 
                     <FormField
-                        id={'teams'}
-                        formData={this.state.formData.teams}
+                        id={'team'}
+                        formData={this.state.formData.team}
                         change={(element) => this.updateForm(element)}
                     />
 

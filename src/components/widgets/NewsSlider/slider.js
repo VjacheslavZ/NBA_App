@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { firebaseArticles, firebaseLooper } from '../../../firebase';
+import {firebase, firebaseArticles, firebaseLooper } from '../../../firebase';
 import SliderTemplates from './slider_templates';
 
 class NewsSlider extends Component {
@@ -9,13 +9,34 @@ class NewsSlider extends Component {
     };
 
     componentWillMount(){
-        firebaseArticles.limitToFirst(3).once('value')
+        firebaseArticles.limitToFirst(99).once('value')
             .then((snapshot) => {
                 const news = firebaseLooper(snapshot);
 
-                this.setState({
-                    news
+                const asyncFunction = (item, i, cb) => {
+                    firebase.storage().ref('images')
+                        .child(item.image).getDownloadURL()
+                        .then(url => {
+                            news[i].image = url;
+                            cb();
+                        })
+                };
+
+                let requests = news.map((item,i) => {
+                    return new Promise((resolve) => {
+                        asyncFunction(item, i, resolve)
+                    })
+                });
+
+                Promise.all(requests).then(() => {
+                    this.setState({
+                        news
+                    })
                 })
+
+
+
+
             })
     }
 
